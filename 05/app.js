@@ -1,72 +1,55 @@
 const form = document.querySelector('form')
-const messages = document.querySelector('.messages')
-
-const checkInputsValidate = function (element, array) {
-    const label = element.parentElement.innerText
-    if (element.getAttribute('type') === 'number') {
-        if ((!Number(element.value))) {
-            array.push(`Pole ${label} musi być liczbą`)
-        }
-    }
-    if (element.getAttribute('type') === 'text' && !element.hasAttribute('pattern')) {
-        if (element.value.length === 0) {
-            array.push(`Pole ${label} jest niepoprawne`)
-        }
-    }
-    if (element.getAttribute('name') === 'voivodeship') {
-        if (element.value.length === 0) {
-            array.push(`Pole Województwo jest niepoprawne`)
-        }
-    }
-    if (element.getAttribute('pattern')) {
-        const reg = new RegExp("[0-9]{2}-[0-9]{3}")
-        if (!reg.test(element.value)) {
-            array.push(`Pole ${label} jest niepoprawne`)
-        }
-    }
-
-
-}
-const showError = function (array) {
-    array.forEach(error => {
-        const li = document.createElement('li')
-        li.innerText = error
-        messages.appendChild(li)
-    });
 
 
 
-}
 
 const checkForm = function (e) {
     e.preventDefault()
+    const fields = [
+        { name: 'firstName', label: 'Imię', required: true },
+        { name: 'lastName', label: 'Nazwisko', required: true },
+        { name: 'street', label: 'Ulica', required: true },
+        { name: 'houseNumber', label: 'Numer budynku', type: 'number', required: true },
+        { name: 'flatNumber', label: 'Numer mieszkania', type: 'number', required: true },
+        { name: 'zip', label: 'Kod pocztowy', pattern: '[0-9]{2}-[0-9]{3}', required: true },
+        { name: 'city', label: 'Miasto', required: true },
+        { name: 'voivodeship', label: 'Województwo', required: true }
+    ]
+
+
+    const messages = document.querySelector('.messages')
     const errors = []
 
-    for (const input of form.elements) {
-        if (input.getAttribute('type') === 'submit') continue
-        checkInputsValidate(input, errors)
+    fields.forEach(field => {
+        const value = form.elements[field.name].value
+        if (field.required) {
+            if (value.length === 0) {
+                errors.push(`Dane w polu ${field.label} są niepoprawne`)
+            }
+        }
+        if (field.type === 'number') {
+            if (Number.isNaN(Number(value))) {
+                errors.push(`Dane w polu ${field.label} muszą być liczbą`)
+            }
+        }
+        if (field.pattern) {
+            const reg = new RegExp(field.pattern)
+            if (!reg.test(value)) {
+                errors.push(`Dane w polu ${field.label} muszą być zgodne z wzorem: 00-000`)
+            }
+        }
+    })
 
-    }
     messages.innerHTML = ''
-    if (errors.length > 0) {
-        showError(errors)
-    } else {
-        alert('Formularz wysłany!')
+
+    if (errors.length !== 0) {
+        errors.forEach(error => {
+            const li = document.createElement('li')
+            li.innerText = error
+
+            messages.appendChild(li)
+        })
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 form.addEventListener('submit', checkForm)
